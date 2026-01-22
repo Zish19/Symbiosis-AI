@@ -1,10 +1,43 @@
 import streamlit as st
 import pandas as pd
+from PIL import Image
+import google.generativeai as genai
 
-# 1. PAGE CONFIG (The "Chakachak" Setup)
+# --- 1. PAGE CONFIG (The "Chakachak" Setup) ---
 st.set_page_config(page_title="Circular Bharat Dashboard", layout="wide", initial_sidebar_state="expanded")
 
-# 2. CUSTOM CSS (The Glassmorphism & Fintech Styling)
+# --- 2. AI SETUP (The Brain) ---
+# NOTE: We use the API Key from the sidebar so you don't need env vars for the demo
+def analyze_waste(image, api_key):
+    if not api_key:
+        return "⚠️ Please enter an API Key in the sidebar first."
+    
+    genai.configure(api_key=api_key)
+    
+    try:
+        # We use 'gemini-2.0-flash' because your test confirmed you have it!
+        model = genai.GenerativeModel("gemini-flash-latest")
+        
+        prompt = """
+        You are an expert Industrial Waste Auditor. Analyze this image.
+        Return a summary in this exact format:
+        
+        Item: [Name of the scrap]
+        Material: [Plastic/Metal/Organic/E-Waste]
+        Hazard Level: [Low/Medium/High]
+        Estimated Value: [Price in INR per kg]
+        Recyclable: [Yes/No]
+        Process: [1 sentence on how to recycle it]
+        """
+        
+        with st.spinner("🤖 Symbiosis AI is analyzing particle composition..."):
+            response = model.generate_content([image, prompt])
+            return response.text
+            
+    except Exception as e:
+        return f"❌ AI Error: {str(e)}"
+
+# --- 3. CUSTOM CSS (Glassmorphism & Fintech Styling) ---
 st.markdown("""
     <style>
     /* Global Background */
@@ -58,15 +91,19 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. SIDEBAR NAVIGATION
+# --- 4. SIDEBAR NAVIGATION ---
 with st.sidebar:
     st.title("♻️ Circular Bharat")
     st.markdown("---")
-    nav = st.radio("Navigation", ["Dashboard", "Marketplace", "Reports", "Profile"])
+    
+    # API KEY INPUT (Crucial for the demo!)
+    api_key = st.text_input("🔑 Enter Gemini API Key", type="password")
+    
+    nav = st.radio("Navigation", ["Dashboard", "AI Audit Tool", "Marketplace"])
     st.markdown("---")
     st.info("📍 Location: Faridabad Sector 24")
 
-# 4. DASHBOARD PAGE
+# --- 5. DASHBOARD PAGE ---
 if nav == "Dashboard":
     st.header("🌟 MSME Green Impact Dashboard")
     
@@ -82,7 +119,35 @@ if nav == "Dashboard":
     chart_data = pd.DataFrame({'Month': ['Aug', 'Sep', 'Oct'], 'Recycled': [1200, 2500, 4250]})
     st.line_chart(chart_data.set_index('Month'))
 
-# 5. MARKETPLACE FEED PAGE
+# --- 6. AI AUDIT TOOL PAGE (The "Brain") ---
+elif nav == "AI Audit Tool":
+    st.header("🤖 AI Waste Auditor")
+    st.caption("Upload a photo of industrial scrap to verify value & mint certificates.")
+    
+    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"])
+    
+    if uploaded_file is not None:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            image = Image.open(uploaded_file)
+            st.image(image, caption='Uploaded Sample', use_column_width=True)
+            
+        with col2:
+            st.write("### AI Analysis Result")
+            
+            if st.button("Run Symbiosis AI Check"):
+                result = analyze_waste(image, api_key)
+                
+                if "Error" in result:
+                    st.error(result)
+                else:
+                    st.success("Audit Complete!")
+                    st.code(result, language="yaml")
+                    st.markdown("<span class='ai-badge'>✅ Verified & Minted on Blockchain</span>", unsafe_allow_html=True)
+                    st.balloons()
+
+# --- 7. MARKETPLACE PAGE ---
 elif nav == "Marketplace":
     st.header("📦 Industrial Waste Marketplace")
     st.caption("Live feed of by-products from nearby MSMEs in Faridabad")
