@@ -4,3 +4,4 @@ pandas
 scikit-learn
 python-dotenv
 python-multipart  <-- Crucial for handling file uploads in FastAPI
+google-generativeai
