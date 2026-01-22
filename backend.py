@@ -1,15 +1,15 @@
-# backend.py
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from ai_engine import analyze_image, match_buyer
 import uvicorn
 
 app = FastAPI()
 
-# --- CORS CONFIGURATION (Allows React to talk to Python) ---
+# --- 1. THE CORS GATEKEEPER ---
+# We use both localhost and 127.0.0.1 to prevent "Connection Refused"
 origins = [
-    "http://localhost:5173",  # React default port
-    "http://localhost:3000",  # Alternate React port
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(
@@ -24,30 +24,31 @@ app.add_middleware(
 def home():
     return {"status": "Symbiosis AI Server Running"}
 
-@app.post("/predict")
-async def predict_waste(file: UploadFile = File(...)):
+# --- 2. THE MAIN ENGINE ---
+# 🚨 FIXED: Route name changed to /analyze to match your AIScanner.jsx
+@app.post("/analyze") 
+async def predict_waste(image: UploadFile = File(...)): # 🚨 Ensure key is 'image'
     try:
         # 1. Read the image file
-        image_data = await file.read()
+        image_data = await image.read()
         
-        # 2. Get the AI Analysis (Returns a Dictionary)
-        # Example: {'material': 'Copper', 'confidence': 0.9, ...}
+        # 2. Get the AI Analysis (Gemini/Vision Logic)
         analysis = analyze_image(image_data)
         
-        # 3. Find Buyers
-        # FIX: We now pass the WHOLE analysis dictionary, not just the name
+        # 3. Match with Buyers in Faridabad/Delhi
         buyers = match_buyer(analysis)
         
-        # 4. Return clean JSON to Frontend
+        # 4. Success Response
         return {
+            "status": "success",
             "analysis": analysis,
             "recommended_buyers": buyers
         }
 
     except Exception as e:
         print(f"CRITICAL BACKEND ERROR: {e}")
-        return {"error": str(e)}
+        # Return a proper 500 error instead of just a string
+        raise HTTPException(status_code=500, detail=str(e))
 
-# Run the server directly
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

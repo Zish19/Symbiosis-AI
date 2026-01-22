@@ -1,42 +1,31 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Custom Animated Background Blobs */
+.bg-blob {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+  border-radius: 50%;
+  z-index: -1;
+  filter: blur(80px);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Text Gradient Animation */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: smooth-gradient 6s ease infinite;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+@keyframes float {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0.1; }
+  50% { opacity: 0.2; }
+  100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.animate-float {
+  animation: float 20s linear infinite;
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+/* Hide scrollbar for clean dashboard look */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
