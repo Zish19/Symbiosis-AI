@@ -10,9 +10,8 @@ import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
-from streamlit_mic_recorder import speech_to_text # <--- NEW VOICE LIBRARY
+from streamlit_mic_recorder import speech_to_text
 
-# --- CONFIGURATION ---
 load_dotenv()
 
 api_key = os.getenv("GOOGLE_API_KEY")
@@ -28,15 +27,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- HELPER: PDF CERTIFICATE GENERATOR ---
-# --- HELPER: PDF CERTIFICATE GENERATOR ---
+
 def create_pdf_certificate(item_name, material_type, value, process):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
     
-    # Border & Header
-    # FIX: Use HexColor instead of hexof
+
     c.setStrokeColor(colors.HexColor("#00d2ff")) 
     c.setLineWidth(5)
     c.rect(30, 30, width-60, height-60)
@@ -47,7 +44,6 @@ def create_pdf_certificate(item_name, material_type, value, process):
     c.setFont("Helvetica", 12)
     c.drawCentredString(width/2, height-130, "Verified by AI Audit System v2.6")
     
-    # Content
     c.setFont("Helvetica", 16)
     c.drawString(100, height-250, f"Date: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     c.drawString(100, height-300, f"Identified Item: {item_name}")
@@ -56,11 +52,9 @@ def create_pdf_certificate(item_name, material_type, value, process):
     
     c.setFont("Helvetica-Oblique", 14)
     c.drawString(100, height-450, "Recommended Process:")
-    c.drawString(100, height-470, process[:80] + "...") # Truncate for PDF
+    c.drawString(100, height-470, process[:80] + "...")
     
-    # Footer
     c.setFont("Helvetica-Bold", 20)
-    # FIX: Use HexColor instead of hexof
     c.setFillColor(colors.HexColor("#00d2ff"))
     c.drawCentredString(width/2, 100, "APPROVED FOR PROCESSING")
     
@@ -68,7 +62,6 @@ def create_pdf_certificate(item_name, material_type, value, process):
     buffer.seek(0)
     return buffer
 
-# --- 100+ SAMPLE GENERATOR ---
 def generate_market_data():
     data = []
     materials = [
@@ -101,7 +94,6 @@ def generate_market_data():
         })
     return data
 
-# --- INITIALIZE STATE ---
 if "listings" not in st.session_state:
     st.session_state.listings = generate_market_data()
 
@@ -110,7 +102,6 @@ if "chat_history" not in st.session_state:
         {"role": "model", "text": "Hello, COO. I have analyzed your inventory. We are currently heavy on E-Waste. How can I assist?"}
     ]
 
-# --- STYLING ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
@@ -133,7 +124,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- SIDEBAR ---
 with st.sidebar:
     st.markdown("### SYMBIOSIS AI")
     st.caption("Industrial Waste OS v3.0 (Voice Enabled)")
@@ -142,7 +132,6 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("<div style='font-size:0.8rem; color:#666;'>🟢 SYSTEM OPERATIONAL</div>", unsafe_allow_html=True)
 
-# --- 1. DASHBOARD ---
 if menu == "DASHBOARD":
     st.title("Operational Overview")
     c1, c2, c3, c4 = st.columns(4)
@@ -156,7 +145,6 @@ if menu == "DASHBOARD":
     fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font=dict(color='#666'), margin=dict(l=0,r=0,t=20,b=20), height=300)
     st.plotly_chart(fig, use_container_width=True)
 
-# --- 2. AI AUDITOR (WITH PDF) ---
 elif menu == "AI AUDITOR":
     st.title("Neural Waste Scanner")
     c1, c2 = st.columns([1, 1])
@@ -172,24 +160,20 @@ elif menu == "AI AUDITOR":
         if uploaded_file and st.button("RUN DIAGNOSTICS"):
             with st.spinner("Scanning with Gemini 2.5..."):
                 try:
-                    # 1. AI Analysis
                     model = genai.GenerativeModel("gemini-2.5-flash")
                     prompt = "Analyze this industrial waste. Return 4 lines ONLY: ITEM, MATERIAL, VALUE (e.g. INR 500/kg), PROCESS"
                     response = model.generate_content([prompt, image])
                     result_text = response.text
                     
-                    # Parse results for PDF (Simple parsing)
                     lines = result_text.split('\n')
                     item_val = lines[0].split(':')[-1] if len(lines) > 0 else "Unknown"
                     mat_val = lines[1].split(':')[-1] if len(lines) > 1 else "Unknown"
                     val_val = lines[2].split(':')[-1] if len(lines) > 2 else "Unknown"
                     proc_val = lines[3].split(':')[-1] if len(lines) > 3 else "Unknown"
 
-                    # 2. Display Result
                     st.success("SCAN COMPLETE")
                     st.markdown(f"<div style='background:#111; padding:20px; border-left:3px solid #00d2ff; color:#00d2ff; font-family:monospace;'>{result_text.replace(chr(10), '<br>')}</div>", unsafe_allow_html=True)
                     
-                    # 3. Generate PDF
                     pdf_bytes = create_pdf_certificate(item_val, mat_val, val_val, proc_val)
                     st.markdown("<br>", unsafe_allow_html=True)
                     st.download_button(
@@ -202,19 +186,17 @@ elif menu == "AI AUDITOR":
                 except Exception as e:
                     st.error(f"Error: {e}")
 
-# --- 3. MARKETPLACE ---
 elif menu == "MARKETPLACE":
     st.title("B2B Material Exchange")
     st.markdown("<div style='background:#111; padding:10px; color:#888; font-family:monospace; margin-bottom:20px;'>MARKET PULSE: <span style='color:#00ff88;'>COPPER ▲ +2.4%</span> <span style='color:#ff4444;'>ALUMINUM ▼ -0.8%</span></div>", unsafe_allow_html=True)
     
     tabs = st.tabs(["BROWSE", "ANALYTICS", "SELL"])
     
-    with tabs[0]: # Browse
+    with tabs[0]:
         c1, c2 = st.columns([3, 1])
         search = c1.text_input("Search inventory...", placeholder="e.g. Copper")
         filter_type = c2.selectbox("Filter", ["All", "Metal", "Plastic", "E-Waste", "Glass", "Rubber", "Textile"])
         
-        # Table Header
         st.markdown("<div style='display:grid; grid-template-columns:3fr 2fr 2fr 2fr; padding:10px; color:#666; font-weight:600; border-bottom:1px solid #333;'><div>ITEM</div><div>QTY</div><div>PRICE</div><div>ACTION</div></div>", unsafe_allow_html=True)
         
         count = 0
@@ -232,43 +214,35 @@ elif menu == "MARKETPLACE":
                 if c4.button("BID", key=f"btn_{item['id']}"): st.toast(f"Bid placed on {item['item']}!", icon="✅")
                 st.markdown("<hr style='margin:5px 0; border-color:#222;'>", unsafe_allow_html=True)
 
-    with tabs[1]: # Analytics
+    with tabs[1]:
         st.markdown("### Price Trends")
         fig = go.Figure(data=[go.Scatter(y=[700, 720, 710, 730], line=dict(color='#00ff88'))])
         fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font=dict(color='#888'), height=300)
         st.plotly_chart(fig, use_container_width=True)
 
-    with tabs[2]: # Sell
+    with tabs[2]: 
         st.markdown("### New Listing")
         with st.form("sell_form"):
             new_item = st.text_input("Item Name")
             submitted = st.form_submit_button("PUBLISH")
             if submitted: st.success("Listing Added!")
 
-# --- 4. SMART ASSISTANT (WITH VOICE) ---
 elif menu == "SMART ASSISTANT":
     st.title("🤖 Industrial Copilot")
     st.markdown("Ask questions about your inventory or use **Voice Commands** (e.g., 'Add 500kg of Steel').")
 
-    # A. Voice Input Section
     st.markdown("### 🎙️ Voice Command")
-    # This widget returns text when speech ends
     voice_text = speech_to_text(language='en', start_prompt="CLICK TO SPEAK", stop_prompt="LISTENING...", just_once=True, key='STT')
     
-    # B. Process Voice Command
     if voice_text:
         st.info(f"🎤 Heard: '{voice_text}'")
         
-        # Simple Logic to Detect "Add" command
         if "add" in voice_text.lower():
             try:
-                # Basic Parsing: "Add 500 kg of Steel"
                 parts = voice_text.split(' ')
-                # Heuristic: Find number (qty) and the rest is item
                 qty = next((int(s) for s in parts if s.isdigit()), 100)
                 item_name = voice_text.lower().replace("add", "").replace(str(qty), "").replace("kg", "").replace("of", "").strip().title()
                 
-                # Execute Action
                 new_id = len(st.session_state.listings) + 1
                 st.session_state.listings.insert(0, {
                     "id": new_id, "item": item_name, "qty": qty, "unit": "kg", 
@@ -279,10 +253,8 @@ elif menu == "SMART ASSISTANT":
             except:
                 st.warning("Could not parse command. Try: 'Add 500 kg of Steel'")
         else:
-            # Treat as Chat Input
             st.session_state.chat_history.append({"role": "user", "text": voice_text})
 
-    # C. Chat Interface
     chat_container = st.container()
     with chat_container:
         for msg in st.session_state.chat_history:
@@ -290,17 +262,13 @@ elif menu == "SMART ASSISTANT":
             with st.chat_message(role_display):
                 st.write(msg["text"])
 
-    # D. Text Input (Fallback)
     if prompt := st.chat_input("Type your query..."):
-        # Add User Message
         st.session_state.chat_history.append({"role": "user", "text": prompt})
         with st.chat_message("user"):
             st.write(prompt)
             
-        # Generate AI Response (Context Aware)
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                # Create context from top 5 listings
                 inventory_context = "\n".join([f"- {i['qty']}{i['unit']} of {i['item']} ({i['seller']})" for i in st.session_state.listings[:5]])
                 
                 full_prompt = f"""
@@ -319,7 +287,6 @@ elif menu == "SMART ASSISTANT":
                 st.write(response.text)
                 st.session_state.chat_history.append({"role": "model", "text": response.text})
 
-# --- 5. SETTINGS ---
 elif menu == "SETTINGS":
     st.title("System Configuration")
     st.text_input("Wallet Address", value="0x71C...9A23")
