@@ -10,7 +10,7 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 
 if API_KEY:
     genai.configure(api_key=API_KEY)
-    # Using the model you confirmed exists in your list
+    # Using the model you confirmed exists in your l
     model = genai.GenerativeModel('gemini-flash-latest')
 else:
     model = None
