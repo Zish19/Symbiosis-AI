@@ -4,19 +4,16 @@ import re
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# Load API Key
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 if API_KEY:
     genai.configure(api_key=API_KEY)
-    # Using the model you confirmed exists in your l
     model = genai.GenerativeModel('gemini-flash-latest')
 else:
     model = None
     print("⚠️ WARNING: No API Key found. Using Mock Mode.")
 
-# Database of Buyers
 BUYERS_DB = [
     {"name": "GreenRoads Infra", "location": "Sector 24, Faridabad", "needs": ["plastic", "rubber", "polymers", "pet"], "price": 42},
     {"name": "EcoBricks Ltd", "location": "Ballabgarh", "needs": ["fly ash", "sludge", "concrete"], "price": 15},
@@ -50,10 +47,8 @@ def analyze_image(image_bytes):
             prompt
         ])
         
-        print(f"🔹 Raw AI Response: {response.text}") # Debugging: See what AI actually said
+        print(f"🔹 Raw AI Response: {response.text}") 
 
-        # ROBUST FIX: Use Regex to find the JSON object { ... } inside the text
-        # This works even if the AI says "Here is your data: {json} ..."
         json_match = re.search(r"\{.*\}", response.text, re.DOTALL)
         
         if json_match:
