@@ -12,7 +12,7 @@ if API_KEY:
     model = genai.GenerativeModel('gemini-flash-latest')
 else:
     model = None
-    print("⚠️ WARNING: No API Key found. Using Mock Mode.")
+    print(" WARNING: No API Key found. Using Mock Mode.")
 
 BUYERS_DB = [
     {"name": "GreenRoads Infra", "location": "Sector 24, Faridabad", "needs": ["plastic", "rubber", "polymers", "pet"], "price": 42},
